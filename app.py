@@ -1,12 +1,13 @@
 # app.py
 
 from flask import Flask, request, jsonify, render_template
+from flask_cors import CORS
 import joblib
 import pandas as pd
 import numpy as np
 
 app = Flask(__name__)
-
+CORS(app)
 # --- Load Trained Artifacts ---
 try:
     model = joblib.load('xgb_model.joblib')
@@ -100,8 +101,10 @@ def predict():
         print(f"Error during prediction: {e}")
         return jsonify({'error': str(e)}), 400
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import os
-    port = int(os.environ.get("PORT", 8000))
-    app.run(host="0.0.0.0", port=port)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=True)
+)
+
 
