@@ -13,6 +13,7 @@ try:
     model = joblib.load('xgb_model.joblib')
     scaler = joblib.load('scaler.joblib')
     feature_names = joblib.load('feature_names.joblib')
+    proba_mapping = joblib.load('proba_mapping.joblib'
     print("✅ Model and artifacts loaded successfully!")
 except FileNotFoundError:
     print("❌ Error: Model files not found. Please run train_model.py first.")
@@ -74,21 +75,29 @@ def predict():
         prediction_proba = model.predict_proba(processed_data)[:, 1][0]
         
         # --- Decision Logic (from Canvas Section 6) ---
+        # Get fraud & legit probability
+        proba = model.predict_proba(processed_data)[0]
+        legit_proba = proba[0]   # ✅ Probability of Legitimate
+        fraud_proba = proba[1]   # ✅ Probability of Fraud
+
         HIGH_CONFIDENCE_THRESHOLD = 0.85
         LOW_CONFIDENCE_THRESHOLD = 0.50
-        
-        if prediction_proba >= HIGH_CONFIDENCE_THRESHOLD:
+
+        if fraud_proba >= HIGH_CONFIDENCE_THRESHOLD:
             prediction_class = "Fraud"
             decision = "Block transaction and send notification to user/fraud team."
             confidence = "High"
-        elif prediction_proba >= LOW_CONFIDENCE_THRESHOLD:
+            confidence_score = fraud_proba   # ✅ ใช้ fraud_proba
+        elif fraud_proba >= LOW_CONFIDENCE_THRESHOLD:
             prediction_class = "Suspicious"
             decision = "Send for manual review and monitor similar future behavior."
             confidence = "Low"
+            confidence_score = fraud_proba   # ✅ ใช้ fraud_proba
         else:
             prediction_class = "Legitimate"
             decision = "Approve transaction."
             confidence = "Low Risk"
+            confidence_score = legit_proba   # ✅ ใช้ legit_proba
 
         return jsonify({
             'prediction_class': prediction_class,
@@ -105,6 +114,7 @@ if __name__ == "__main__":
     import os
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=True)
+
 
 
 
