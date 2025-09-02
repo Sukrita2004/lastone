@@ -3,5 +3,6 @@ scikit-learn
 xgboost
 joblib
 flask
+flask-cors
 numpy
 imblearn
